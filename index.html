@@ -116,29 +116,32 @@
     var html = '';
     var pathToLine = {};
 
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-          html = xhr.responseText;
-          pathToLine = buildTree(html);
-        }
+    function getResource(url, cb) {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4 && cb) {
+            cb(xhr.responseText);
+          }
+      }
+      xhr.open('GET', url, true);
+      xhr.send(null);
     }
-    xhr.open('GET', location.href, true);
-    xhr.send(null);
 
-    setTimeout(function() {
-      document.body.innerHTML = '';
+    getResource(location.href, function(body) {
+      html = body;
+      pathToLine = buildTree(html);
+      showCode();
+    });
+       
+    function showCode() {
       var iframe = document.createElement('iframe');
 
       iframe.classList.add('fit');
       iframe.width = '50%';
       iframe.height = '100%';
       iframe.frameBorder = 'no';
-      iframe.style.right = '50%';
-
-      document.body.style.overflow = 'hidden';
-
       iframe.src = location.href.replace('code=1', '');
+      iframe.style.right = '50%';
 
       document.body.appendChild(iframe);
 
@@ -152,13 +155,14 @@
 
       codeContainer.appendChild(codeBox);
       document.body.appendChild(codeContainer);
+      Prism.highlightAll();
+    }
 
-      setTimeout(function() {
-        Prism.highlightAll();
-      }, 0);
-    }, 0);
+    // 
+    document.body.innerHTML = '';
+    document.body.style.overflow = 'hidden';
 
-
+    //
     window.addEventListener('message', function(event) {
       var pre = document.querySelector('pre');
       if (event.data) {
