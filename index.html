@@ -2,24 +2,30 @@
   if (window.parent !== window) {
     document.addEventListener('mousemove', function(event) {
       var targetElement = Polymer.dom(event).localTarget;
+      var fullPath;
 
-      var path = [];
-      var node = targetElement;
+      if (targetElement != document.body && targetElement != document.documentElement) {
+        var path = [];
+        var node = targetElement;
 
-      while (node && node !== document) {
-        var i = 0;
-        var childNumber = 0;
-        var children = Polymer.dom(Polymer.dom(node).parentNode).children;
+        while (node && node !== document) {
+          var i = 0;
+          var childNumber = 0;
+          var children = Polymer.dom(Polymer.dom(node).parentNode).children;
 
-        for (; i < children.length && children[i] != node; i++) {
-          childNumber++;
+          for (; i < children.length && children[i] != node; i++) {
+            childNumber++;
+          }
+
+          path.unshift(node.tagName + ':' + childNumber);
+          node = Polymer.dom(node).parentNode;
         }
 
-        path.unshift(node.tagName + ':' + childNumber);
-        node = Polymer.dom(node).parentNode;
-      }
+        fullPath = path.join('/');
 
-      var fullPath = path.join('/');
+      } else {
+        fullPath = '';
+      }
 
       window.parent.postMessage({
         path: fullPath
@@ -144,7 +150,6 @@
       codeBox.classList.add('language-markup');
       codeBox.innerHTML= html.replace(/\</g, '&lt;');
 
-
       codeContainer.appendChild(codeBox);
       document.body.appendChild(codeContainer);
 
@@ -153,10 +158,15 @@
 
 
     window.addEventListener('message', function(event) {
-      if (event.data && event.data.path) {
-        var line = highlightLines(document.querySelector('pre'), pathToLine[event.data.path]);
-        if (line) {
-          line.scrollIntoViewIfNeeded();
+      var pre = document.querySelector('pre');
+      if (event.data) {
+        if (event.data.path) {
+          var line = highlightLines(pre, pathToLine[event.data.path]);
+          if (line) {
+            line.scrollIntoViewIfNeeded();
+          }
+        } else {
+          highlightLines(pre, null);
         }
       }
     });
@@ -168,15 +178,11 @@
 var lastRange = {};
 
 function highlightLines(pre, range) {
-  if (!range) {
-    return;
-  }
-
   var className = 'line-highlight';
   var currentLines = [].slice.call(pre.getElementsByClassName(className), 0);
 
 
-  if (range.start === lastRange.start && range.end === lastRange.end) {
+  if (range && lastRange && range.start === lastRange.start && range.end === lastRange.end) {
     return;
   }
 
@@ -188,6 +194,12 @@ function highlightLines(pre, range) {
       }, 500);
     }
   });
+
+  lastRange = range;
+
+  if (!range) {
+    return;
+  }
 
   var offset = +pre.getAttribute('data-line-offset') || 0;
   var lineHeight = parseFloat(getComputedStyle(pre).lineHeight);
@@ -222,7 +234,6 @@ function highlightLines(pre, range) {
     line.classList.add('visible');
   }, 0);
 
-  lastRange = range;
   return line;
 }
 </script>
