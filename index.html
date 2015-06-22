@@ -153,7 +153,9 @@
       codeContainer.appendChild(codeBox);
       document.body.appendChild(codeContainer);
 
-      Prism.highlightAll();
+      setTimeout(function() {
+        Prism.highlightAll();
+      }, 0);
     }, 0);
 
 
