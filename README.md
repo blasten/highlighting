@@ -1,4 +1,4 @@
 # highlighting
 Polymer code highlighting 
 
-CDN: https://cdn.rawgit.com/blasten/highlighting/master/index.html
+<link rel="import" href="https://cdn.rawgit.com/blasten/highlighting/master/index.html">
