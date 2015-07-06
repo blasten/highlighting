@@ -1,3 +1,4 @@
+
 <script>
   // FYI: this is a POC
   // Algorithm developed by @blasten
@@ -178,10 +179,16 @@
       Prism.highlightAll();
     }
 
-    //
-    document.body.innerHTML = '';
+    var hiddenTemplate = document.createElement('template');
+    // move visible nodes    
+    [].slice.call(document.body.children).forEach(function(element) {
+      hiddenTemplate.appendChild(element);
+    });
 
+    document.body.appendChild(hiddenTemplate);
     document.body.style.overflow = 'hidden';
+
+    
     //
     window.addEventListener('message', function(event) {
       var pre = document.querySelector('pre');
